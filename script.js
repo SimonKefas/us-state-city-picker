@@ -333,68 +333,130 @@
     ]
   };
 
-  // After the locations, the rest of your code remains the same:
-  document.addEventListener("DOMContentLoaded", function () {
-    const inputField = document.getElementById("city-input");
-    const ghostField = document.getElementById("ghostInput");
-    const stateField = document.getElementById("state-input");
-
-    // Flatten the data into a single suggestions array
-    const suggestions = Object.entries(stateCityList).flatMap(([state, cities]) =>
+  // Flatten the data for quick searching: an array of { city, state }
+  const suggestions = Object.entries(stateCityList)
+    .flatMap(([state, cities]) =>
       cities.map(city => ({ city, state }))
     );
 
-    let currentPrediction = "";
+  // Reference to elements
+  const inputField  = document.getElementById("city-input");
+  const ghostField  = document.getElementById("ghostInput");
+  const stateSelect = document.getElementById("state-select");
 
-    inputField.addEventListener("input", (e) => {
-      const typedValue = e.target.value;
-      const inputLower = typedValue.toLowerCase();
+  // Keep track of the remainder to apply on Tab
+  let currentPrediction = "";
 
-      if (!typedValue) {
-        currentPrediction = "";
-        ghostField.textContent = ""; 
-        // Or you can show no remainder
-        return;
+  // Helper: Populate the <select> with the given array of state names
+  function populateStateSelect(stateList, selectedState) {
+    // Clear old options
+    stateSelect.innerHTML = "";
+
+    // If there's no match found or we want to show all states:
+    // stateList will be the entire keys of stateCityList 
+    // or only the subset matching the typed city.
+    stateList.forEach(st => {
+      const option = document.createElement("option");
+      option.value = st;
+      option.textContent = st;
+      // if we want to auto-select a single match:
+      if (selectedState && selectedState === st) {
+        option.selected = true;
       }
+      stateSelect.appendChild(option);
+    });
+  }
 
-      // Find first matching city
-      const match = suggestions.find(({ city }) =>
-        city.toLowerCase().startsWith(inputLower)
-      );
+  // Initially populate stateSelect with *all* states
+  populateStateSelect(Object.keys(stateCityList));
 
-      if (match) {
-        // Remainder after typed portion
-        const remainder = match.city.slice(typedValue.length);
+  inputField.addEventListener("input", (e) => {
+    const typedValue = e.target.value;
+    const typedValueLower = typedValue.toLowerCase();
 
-        currentPrediction = remainder;
-        // We place typedValue as transparent, remainder as faint
-        ghostField.innerHTML = `
-          <span style="color: transparent">${typedValue}</span>
-          <span style="color: inherit; line-height: normal;">${remainder}</span>
-        `;
-      } else {
-        currentPrediction = "";
-        ghostField.textContent = "";
+    // If user clears city text, reset:
+    if (!typedValue) {
+      currentPrediction = "";
+      ghostField.textContent = "";
+      // Show *all* states again
+      populateStateSelect(Object.keys(stateCityList));
+      return;
+    }
+
+    // 1. Find first city that starts with typedValue (for ghost remainder)
+    const firstMatch = suggestions.find(({ city }) =>
+      city.toLowerCase().startsWith(typedValueLower)
+    );
+
+    if (firstMatch) {
+      // Remainder for ghost text
+      const remainder = firstMatch.city.slice(typedValue.length);
+      currentPrediction = remainder;
+
+      // typed portion is transparent, remainder is faint
+      ghostField.innerHTML = `
+        <span style="color: transparent">${typedValue}</span>
+        <span style="color: #ccc">${remainder}</span>
+      `;
+    } else {
+      currentPrediction = "";
+      ghostField.textContent = "";
+    }
+
+    // 2. Collect *all states* that have at least one city starting with typedValue
+    const matchedStates = new Set();  // to avoid duplicates
+    suggestions.forEach(({ city, state }) => {
+      if (city.toLowerCase().startsWith(typedValueLower)) {
+        matchedStates.add(state);
       }
     });
 
-    // Handle Tab key for autocomplete
-    inputField.addEventListener("keydown", (e) => {
-      if (e.key === "Tab" && currentPrediction) {
-        e.preventDefault(); // Prevent default tabbing
-        // Autocomplete city
-        inputField.value += currentPrediction;
-        // Clear ghost suggestion
-        ghostField.textContent = "";
-        currentPrediction = "";
+    // If no states found, show all states
+    if (matchedStates.size === 0) {
+      populateStateSelect(Object.keys(stateCityList));
+    }
+    // If exactly 1 or more states found, show them
+    else {
+      const statesArray = Array.from(matchedStates).sort();
+      // (Optional) if exactly 1, you might want to auto-select it:
+      let selectedState = null;
+      if (statesArray.length === 1) {
+        selectedState = statesArray[0];
+      }
+      populateStateSelect(statesArray, selectedState);
+    }
+  });
 
-        // Fill the state
-        const selected = suggestions.find(({ city }) =>
-          city.toLowerCase() === inputField.value.toLowerCase()
-        );
-        if (selected) {
-          stateField.value = selected.state;
+  // Use Tab key to autocomplete city
+  inputField.addEventListener("keydown", (e) => {
+    if (e.key === "Tab" && currentPrediction) {
+      e.preventDefault();
+      // Autocomplete city
+      inputField.value += currentPrediction;
+      ghostField.textContent = "";
+      currentPrediction = "";
+
+      // We might want to *update the stateSelect*
+      // e.g. if that city only belongs to 1 state, select it:
+      const typed = inputField.value.toLowerCase();
+      const matches = suggestions.filter(({ city }) => city.toLowerCase() === typed);
+
+      if (matches.length === 1) {
+        // Only one state for that city, select it
+        const onlyState = matches[0].state;
+        populateStateSelect(Object.keys(stateCityList), onlyState);
+      } else {
+        // multiple states for that city, or none
+        // you can either show them all or only the matching ones
+        const matchedStates = new Set();
+        suggestions.forEach(({ city, state }) => {
+          if (city.toLowerCase() === typed) {
+            matchedStates.add(state);
+          }
+        });
+        if (matchedStates.size > 0) {
+          populateStateSelect(Array.from(matchedStates).sort());
         }
       }
-    });
+    }
   });
