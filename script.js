@@ -370,7 +370,7 @@
         // We place typedValue as transparent, remainder as faint
         ghostField.innerHTML = `
           <span style="color: transparent">${typedValue}</span>
-          <span style="color: inherit">${remainder}</span>
+          <span style="color: inherit; line-height: normal;">${remainder}</span>
         `;
       } else {
         currentPrediction = "";
