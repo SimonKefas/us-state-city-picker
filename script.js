@@ -336,9 +336,10 @@
   // After the locations, the rest of your code remains the same:
   document.addEventListener("DOMContentLoaded", function () {
     const inputField = document.getElementById("city-input");
+    const ghostField = document.getElementById("ghostInput");
     const stateField = document.getElementById("state-input");
 
-    // Flatten the data into a suggestions array
+    // Flatten the data into a single suggestions array
     const suggestions = Object.entries(stateCityList).flatMap(([state, cities]) =>
       cities.map(city => ({ city, state }))
     );
@@ -346,42 +347,53 @@
     let currentPrediction = "";
 
     inputField.addEventListener("input", (e) => {
-      const input = e.target.value.toLowerCase();
+      const typedValue = e.target.value;
+      const inputLower = typedValue.toLowerCase();
 
-      if (!input) {
+      if (!typedValue) {
         currentPrediction = "";
-        inputField.setAttribute("placeholder", "Start typing...");
+        ghostField.textContent = ""; 
+        // Or you can show no remainder
         return;
       }
 
-      // Find matching city
+      // Find first matching city
       const match = suggestions.find(({ city }) =>
-        city.toLowerCase().startsWith(input)
+        city.toLowerCase().startsWith(inputLower)
       );
 
       if (match) {
-        const remainder = match.city.slice(input.length);
+        // Remainder after typed portion
+        const remainder = match.city.slice(typedValue.length);
+
         currentPrediction = remainder;
-        inputField.setAttribute("placeholder", input + remainder); // Display faded suggestion
+        // We place typedValue as transparent, remainder as faint
+        ghostField.innerHTML = `
+          <span style="color: transparent">${typedValue}</span>
+          <span style="color: #ccc">${remainder}</span>
+        `;
       } else {
         currentPrediction = "";
-        inputField.setAttribute("placeholder", "No matches found...");
+        ghostField.textContent = "";
       }
     });
 
     // Handle Tab key for autocomplete
     inputField.addEventListener("keydown", (e) => {
       if (e.key === "Tab" && currentPrediction) {
-        e.preventDefault(); // Prevent default tabbing behavior
-        inputField.value += currentPrediction; // Autocomplete city name
+        e.preventDefault(); // Prevent default tabbing
+        // Autocomplete city
+        inputField.value += currentPrediction;
+        // Clear ghost suggestion
+        ghostField.textContent = "";
         currentPrediction = "";
 
-        // Fill the state field
+        // Fill the state
         const selected = suggestions.find(({ city }) =>
           city.toLowerCase() === inputField.value.toLowerCase()
         );
         if (selected) {
-          stateField.value = selected.state; // Autofill state
+          stateField.value = selected.state;
         }
       }
     });
