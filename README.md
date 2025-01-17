@@ -23,9 +23,9 @@ This project demonstrates a **ghost-autocomplete** feature for a City input fiel
 
 Add the script to your before body tag. You could either use a specific version of the solution or use @latest (instead of 1.1.1)
 
-´´´
+```
 <script src="https://cdn.jsdelivr.net/gh/SimonKefas/us-state-city-picker@v1.1.1/script.js"></script>
-´´´
+```
 
 ---
 
