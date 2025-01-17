@@ -35,7 +35,7 @@ This project demonstrates a **ghost-autocomplete** feature for a City input fiel
 </div>
 <input id="state-select" class="absolute-full-styles form-input-styles"/>
 ```
-The ghost-input-styles should have position absolute with top, left, right and bottom set to 0. Also the same text styles as the input.
+The ghost-input-styles should have pointer-events: none, and position absolute with top, left, right and bottom set to 0. Also the same text styles as the input.
 
 3. Add required ID's to your elements: (as shown over ☝)
    - a `city-input` to the input where the user is going to type a city.
