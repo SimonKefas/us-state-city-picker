@@ -1,99 +1,124 @@
-# City Autocomplete with Dynamic State Select
+# US City & State Picker
 
-This project demonstrates a **ghost-autocomplete** feature for a City input field, combined with a **dynamic State** dropdown. 
-
-**Key Features:**
-1. **Ghost Autocomplete**: As the user types in a City, the **rest** of the text is displayed in a faint color within the same input box.
-2. **Dynamic State Select**:
-   - As soon as the user types in the City, the **State** dropdown is filtered to show **only** states that contain a matching city.
-   - If **no** matching state is found, **all** states are displayed.
-   - If exactly **one** possible matching state is found for a typed city, the code **auto-selects** it.
-
-## Table of Contents
-
-1. [Getting Started](#getting-started)
-2. [How It Works](#how-it-works)
-3. [Folder Structure](#folder-structure)
-4. [Customization Tips](#customization-tips)
-5. [License](#license)
+This script provides an **autocomplete** feature for U.S. city names (with a “ghost text” suggestion) and an accompanying **state selection** dropdown. It supports **multiple forms** on a single page.
 
 ---
 
-## Getting Started
+## 1. Include the Script
 
-1. Add the script to your before body tag. You could either use a specific version of the solution or use @latest (instead of 1.1.1)
+Include the script in your HTML. For example:
 
-```
-<script src="https://cdn.jsdelivr.net/gh/SimonKefas/us-state-city-picker@v1.1.1/script.js"></script>
+```html
+<script src="https://cdn.jsdelivr.net/gh/SimonKefas/us-state-city-picker@latest/script.js"></script>
 ```
 
-2. Add base elements:
-```
-<div style="position: relative;">
-   <input id="ghostInput" class="ghost-input-styles form-input-styles"/>
-   <div id="city-input" class="form-input-styles" autocomplete="off"></div>
+> **Tip:** Place it **below** your form markup, or place it in the `<head>` and ensure your script runs after the DOM is ready.
+
+---
+
+## 2. Basic HTML Structure
+
+For **each form** where you want the city + state picker:
+
+1. Create a container with the class `.form-block`.
+2. Inside it, have:
+   - An `<input>` for the **city** (with class `.city-input`).
+   - A “ghost field” `<div>` (with class `.ghost-field`) for showing the faint autocomplete suggestion.
+   - A `<select>` for the **state** (with class `.state-select`).
+
+**Example:**
+
+```html
+<div class="form-block" id="form1">
+  <label>City:</label>
+  <input type="text" class="city-input" />
+  <div class="ghost-field"></div>
+
+  <label>State:</label>
+  <select class="state-select"></select>
 </div>
-<input id="state-select" class="absolute-full-styles form-input-styles"/>
+
+<!-- Form 2 -->
+<div class="form-block" id="form2">
+  <label>City:</label>
+  <input type="text" class="city-input" />
+  <div class="ghost-field"></div>
+
+  <label>State:</label>
+  <select class="state-select"></select>
+</div>
 ```
-The ghost-input-styles should have pointer-events: none, and position absolute with top, left, right and bottom set to 0. Also the same text styles as the input.
 
-3. Add required ID's to your elements: (as shown over ☝)
-   - a `city-input` to the input where the user is going to type a city.
-   - a `state-select` to the select input, from where the user is going to select a state, after city is typed
-   - a `ghostInput` to the element which is going to stand on top of the city input (for the autocomplete illusion)
+You can repeat this structure for as many forms as you like.
 
 ---
 
-## How It Works
+## 3. Basic CSS (Recommended)
 
-### 1. Ghost Autocomplete
+For the **ghost text** to align nicely behind the `<input>`, you can use something like:
 
-- In the HTML, there is a **“wrapper” div** (`.autocomplete-wrapper`) containing two elements:
-  1. A `<div class="ghost-input">` for **faint** suggestion text.
-  2. The **real** `<input>` typed by the user (on top).
+```css
+.form-block {
+  position: relative; /* allows positioning ghost text in the same container */
+  margin-bottom: 1.5rem;
+}
 
-- Every keystroke triggers logic to:
-  1. **Find** a matching city that starts with the typed text.
-  2. **Split** the match into two parts:
-     - Already typed portion (rendered as `color: transparent` in `.ghost-input`)
-     - Remaining suggested portion (rendered as faint text, e.g. `color: #ccc`).
-  3. This visually appears as “ghosted” text in the same input box.
+.city-input {
+  /* Match width / padding, etc., so the ghost text aligns correctly */
+  width: 200px;
+  position: relative;
+}
 
-### 2. Dynamic State Select
+.ghost-field {
+  position: absolute;
+  pointer-events: none;
+  color: rgba(0, 0, 0, 0.3); /* faint text color */
+  top: 26px; /* adjust to match your input's positioning */
+  left: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 200px; /* match input width */
+}
+```
 
-- The **State** dropdown is a standard `<select>` element.
-- On every keystroke:
-  1. All states whose **cities** begin with the typed substring are collected into a new array.
-  2. The `<select>` is **repopulated** with only those states (sorted alphabetically, if desired).
-  3. If **none** are found, it **reverts** to showing all states.
-
-- When the user **hits Tab** to autocomplete:
-  1. The remainder of the city is appended to the real input.
-  2. The ghost text is cleared.
-  3. We further refine the `<select>` to highlight or select the specific state(s) that match the newly completed city.
-
----
-
-## Customization Tips
-
-1. **Styling**:
-   - Adjust the `.ghost-input` and `.real-input` CSS to fit your design.  
-   - Ensure you match font-size, font-family, and padding so both the ghost text and the real text line up neatly.
-
-2. **Autocomplete Logic**:
-   - The code currently **autocompletes** on **Tab**.  
-   - You can change this to **Enter**, **Right Arrow**, or some other key by editing the `keydown` event listener.
-
-3. **Filtering States**:
-   - Currently, if no city matches, the dropdown reverts to **all** states.  
-   - To change this behavior (e.g. to hide the dropdown or disable it if no match), modify the logic in the `input` event.
-
-4. **Data Source**:
-   - The `stateCityList` object can contain **all** US states and their cities (or any custom set of data).  
-   - Simply add or remove states/cities as needed.
+Feel free to adjust these styles so that the **ghost text** sits perfectly behind your input text.
 
 ---
 
-## License
+## 4. How It Works
 
-This code snippet is provided **as is** for demonstration purposes. You may use it, modify it, and distribute it freely in your own projects. If you share your modifications, consider giving credit to the original authors or repository. 
+Once the script runs, it:
+1. **Scans** the page for all elements with the class `.form-block`.
+2. Inside each `.form-block`, it looks for:
+   - A city `<input>` (`.city-input`)
+   - A ghost `<div>` (`.ghost-field`)
+   - A state `<select>` (`.state-select`)
+3. It **attaches** the logic that:
+   - Autocompletes the city input using a large built-in **U.S. city dataset**.
+   - Dynamically filters the **state** dropdown to show only relevant states for the typed city.
+   - Supports tab-completion using the faint “ghost text” suggestion.
+
+**Typing** in the city field will show you a faint suggestion behind your typed text. Pressing **Tab** auto-fills the rest of the city name. The **State** dropdown narrows down to relevant states for that city (or reverts to all states if no matches).
+
+---
+
+## 5. Customization
+
+- If you want to **change** the classes or IDs used in your HTML, ensure you do the same modifications in the script or in any initialization logic.
+- You can tweak the **ghost text** color, position, or styling in your CSS.
+- You can remove or modify the logic for auto-selecting a state when there’s only one possible match.
+
+---
+
+## 6. Summary
+
+1. **Add** the `<script>` tag from this repository or from a local copy.
+2. **Create** one or more `.form-block` sections, each containing:
+   - **`.city-input`** (city `<input>`)
+   - **`.ghost-field`** (invisible overlay for suggestions)
+   - **`.state-select`** (dropdown of states)
+3. (Optional) Add some **styling** to position `.ghost-field` behind the text input.
+4. That’s it—**no extra calls** needed. The script automatically finds all matching elements on the page.
+
+For questions or more details, please refer to the code comments in **script.js** or [file an issue on the GitHub repository](https://github.com/SimonKefas/us-state-city-picker). Enjoy your new city+state autocomplete!
