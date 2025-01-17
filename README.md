@@ -28,9 +28,16 @@ This project demonstrates a **ghost-autocomplete** feature for a City input fiel
 ```
 
 2. Add base elements:
-   - 
+```
+<div style="position: relative;">
+   <input id="ghostInput" class="ghost-input-styles form-input-styles"/>
+   <div id="city-input" class="form-input-styles" autocomplete="off"></div>
+</div>
+<input id="state-select" class="absolute-full-styles form-input-styles"/>
+```
+The ghost-input-styles should have position absolute with top, left, right and bottom set to 0. Also the same text styles as the input.
 
-3. Add these ID's to your elements:
+3. Add required ID's to your elements: (as shown over ☝)
    - a `city-input` to the input where the user is going to type a city.
    - a `state-select` to the select input, from where the user is going to select a state, after city is typed
    - a `ghostInput` to the element which is going to stand on top of the city input (for the autocomplete illusion)
