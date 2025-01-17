@@ -21,11 +21,19 @@ This project demonstrates a **ghost-autocomplete** feature for a City input fiel
 
 ## Getting Started
 
-Add the script to your before body tag. You could either use a specific version of the solution or use @latest (instead of 1.1.1)
+1. Add the script to your before body tag. You could either use a specific version of the solution or use @latest (instead of 1.1.1)
 
 ```
 <script src="https://cdn.jsdelivr.net/gh/SimonKefas/us-state-city-picker@v1.1.1/script.js"></script>
 ```
+
+2. Add base elements:
+   - 
+
+3. Add these ID's to your elements:
+   - city-input to the input where the user is going to type a city.
+   - state-select to the select input, from where the user is going to select a state, after city is typed
+   - ghostInput to the element which is going to stand on top of the city input (for the autocomplete illusion)
 
 ---
 
