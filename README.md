@@ -21,10 +21,11 @@ This project demonstrates a **ghost-autocomplete** feature for a City input fiel
 
 ## Getting Started
 
-1. **Clone** or **download** this repository.
-2. Open `index.html` (or similarly named file) in your favorite web browser.
-3. Start typing a city in the **“City”** input to see the **ghost** suggestion text appear.
-4. Observe the **State** `<select>` dynamically updating to show relevant states containing the partial typed city.
+Add the script to your before body tag. You could either use a specific version of the solution or use @latest (instead of 1.1.1)
+
+´´´
+<script src="https://cdn.jsdelivr.net/gh/SimonKefas/us-state-city-picker@v1.1.1/script.js"></script>
+´´´
 
 ---
 
@@ -55,24 +56,6 @@ This project demonstrates a **ghost-autocomplete** feature for a City input fiel
   1. The remainder of the city is appended to the real input.
   2. The ghost text is cleared.
   3. We further refine the `<select>` to highlight or select the specific state(s) that match the newly completed city.
-
----
-
-## Folder Structure
-
-```
-your-project/
-├─ index.html     <- Main HTML file with the solution
-├─ README.md      <- This README
-└─ (any CSS/JS files if separated)
-```
-
-- **index.html**: Contains the complete solution: 
-  - The `<style>` block for positioning and coloring the ghost text.
-  - The `<script>` that:
-    - Holds the `stateCityList`.
-    - Flattens city data into an array of `{ city, state }`.
-    - Wires up event listeners (`input`, `keydown`) to handle typing and tab behavior.
 
 ---
 
