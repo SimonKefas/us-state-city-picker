@@ -31,9 +31,9 @@ This project demonstrates a **ghost-autocomplete** feature for a City input fiel
    - 
 
 3. Add these ID's to your elements:
-   - city-input to the input where the user is going to type a city.
-   - state-select to the select input, from where the user is going to select a state, after city is typed
-   - ghostInput to the element which is going to stand on top of the city input (for the autocomplete illusion)
+   - a `city-input` to the input where the user is going to type a city.
+   - a `state-select` to the select input, from where the user is going to select a state, after city is typed
+   - a `ghostInput` to the element which is going to stand on top of the city input (for the autocomplete illusion)
 
 ---
 
