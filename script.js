@@ -343,15 +343,12 @@ const suggestions = Object.entries(stateCityList)
 // -------------------------------------
 // 2) The "setup" function that attaches autocomplete + state select logic
 // -------------------------------------
-function setupCityStateAutocomplete(inputField, ghostField, stateSelect) {
-  // Keep track of the text we will fill in on Tab
+function setupCityStateAutocomplete(inputField, ghostField, stateSelect, suggestions, stateCityList) {
   let currentPrediction = "";
 
-  // Reusable: populate the <select> with an array of states, optionally auto-selecting one
+  // Reusable function to populate <select> with states
   function populateStateSelect(stateList, selectedState = null) {
-    // Clear old options
     stateSelect.innerHTML = "";
-    // Add new ones
     stateList.forEach(st => {
       const option = document.createElement("option");
       option.value = st;
@@ -363,43 +360,72 @@ function setupCityStateAutocomplete(inputField, ghostField, stateSelect) {
     });
   }
 
-  // Initially, show all states
+  // Accept the ghost text and update the state dropdown (same logic for Tab or blur)
+  function acceptSuggestion() {
+    // If there's a leftover suggestion, append it
+    if (currentPrediction) {
+      inputField.value += currentPrediction;
+      ghostField.textContent = "";
+      currentPrediction = "";
+    }
+
+    // Now figure out if there's exactly one state for the newly completed city
+    const typed = inputField.value.toLowerCase();
+    const matches = suggestions.filter(({ city }) => city.toLowerCase() === typed);
+
+    if (matches.length === 1) {
+      // Only one possible state
+      const onlyState = matches[0].state;
+      populateStateSelect(Object.keys(stateCityList), onlyState);
+    } else {
+      // Multiple or no exact matches
+      const matchedStates = new Set();
+      suggestions.forEach(({ city, state }) => {
+        if (city.toLowerCase() === typed) {
+          matchedStates.add(state);
+        }
+      });
+      if (matchedStates.size > 0) {
+        populateStateSelect(Array.from(matchedStates).sort());
+      }
+    }
+  }
+
+  // Initially show *all* states
   populateStateSelect(Object.keys(stateCityList));
 
-  // Handler for city input
+  // On typing...
   inputField.addEventListener("input", (e) => {
     const typedValue = e.target.value;
     const typedValueLower = typedValue.toLowerCase();
 
-    // If user cleared the input, reset everything
+    // If empty, reset
     if (!typedValue) {
       currentPrediction = "";
       ghostField.textContent = "";
-      populateStateSelect(Object.keys(stateCityList)); // show all states
+      populateStateSelect(Object.keys(stateCityList));
       return;
     }
 
-    // 1. Find first city that starts with typedValue
+    // Find the first city that starts with typedValue
     const firstMatch = suggestions.find(({ city }) =>
       city.toLowerCase().startsWith(typedValueLower)
     );
 
     if (firstMatch) {
-      // Remainder for ghost text
+      // Show ghost text
       const remainder = firstMatch.city.slice(typedValue.length);
       currentPrediction = remainder;
-
-      // Show typed portion as transparent, remainder as faint
       ghostField.innerHTML = `
         <span style="color: transparent">${typedValue}</span>
-        <span style="color: inherit; line-height: normal;">${remainder}</span>
+        <span style="color: inherit;">${remainder}</span>
       `;
     } else {
       currentPrediction = "";
       ghostField.textContent = "";
     }
 
-    // 2. Gather states that have at least one city starting with typedValue
+    // Filter states to those matching typedValue
     const matchedStates = new Set();
     suggestions.forEach(({ city, state }) => {
       if (city.toLowerCase().startsWith(typedValueLower)) {
@@ -407,12 +433,10 @@ function setupCityStateAutocomplete(inputField, ghostField, stateSelect) {
       }
     });
 
-    // If no states found, show them all; else show matched
     if (matchedStates.size === 0) {
       populateStateSelect(Object.keys(stateCityList));
     } else {
       const statesArray = Array.from(matchedStates).sort();
-      // (Optional) auto-select if exactly one
       let selectedState = null;
       if (statesArray.length === 1) {
         selectedState = statesArray[0];
@@ -421,38 +445,20 @@ function setupCityStateAutocomplete(inputField, ghostField, stateSelect) {
     }
   });
 
-  // Handler for Tab key to accept ghost text
+  // On Tab key, accept the ghost text
   inputField.addEventListener("keydown", (e) => {
     if (e.key === "Tab" && currentPrediction) {
       e.preventDefault();
-      // Autocomplete city
-      inputField.value += currentPrediction;
-      ghostField.textContent = "";
-      currentPrediction = "";
-
-      // Possibly update the stateSelect if there's exactly one state for that city
-      const typed = inputField.value.toLowerCase();
-      const matches = suggestions.filter(({ city }) => city.toLowerCase() === typed);
-
-      if (matches.length === 1) {
-        // Only one state for that city, select it
-        const onlyState = matches[0].state;
-        populateStateSelect(Object.keys(stateCityList), onlyState);
-      } else {
-        // If multiple states or none, show all relevant states
-        const matchedStates = new Set();
-        suggestions.forEach(({ city, state }) => {
-          if (city.toLowerCase() === typed) {
-            matchedStates.add(state);
-          }
-        });
-        if (matchedStates.size > 0) {
-          populateStateSelect(Array.from(matchedStates).sort());
-        }
-      }
+      acceptSuggestion();
     }
   });
+
+  // >>> On blur, also accept the ghost text <<<
+  inputField.addEventListener("blur", () => {
+    acceptSuggestion();
+  });
 }
+
 
 
 // -------------------------------------
@@ -463,5 +469,5 @@ document.querySelectorAll(".form-block").forEach((block) => {
   const ghostField = block.querySelector(".ghost-field");
   const stateSelect= block.querySelector(".state-select");
 
-  setupCityStateAutocomplete(cityInput, ghostField, stateSelect);
+  setupCityStateAutocomplete(cityInput, ghostField, stateSelect, suggestions, stateCityList);
 });
